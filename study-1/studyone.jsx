@@ -1,9 +1,6 @@
-import { useEffect, useRef, useState, useMemo } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { animated, useSpring } from '@react-spring/three'
-import { GizmoHelper, PivotControls, useHelper } from '@react-three/drei'
-import { AxesHelper, Vector3, Euler, Quaternion, MathUtils } from 'three'
-import { useFrame, useLoader } from '@react-three/fiber'
-import { setQuaternionFromProperEuler } from 'three/src/math/MathUtils'
+import { useLoader } from '@react-three/fiber'
 import * as THREE from 'three'
 import { useControls } from 'leva'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
@@ -11,13 +8,6 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 export default function StudyOne()
 {
 
-    // const yRef = useRef()
-    // const xRef = useRef()
-    // const zRef = useRef()
-
-    // const [ top, setTop ] = useState([1, 2, 3, 4])
-    // const [ side, setSide ] = useState([5, 6, 2, 1])
-    // const [ front, setFront ] = useState([8, 5, 1, 4])
 
     const [cubeState, setCubeState] = useState({
         top: [1, 2, 3, 4],
@@ -93,21 +83,6 @@ export default function StudyOne()
 
     return <>
 
-        {/* <mesh ref={yRef} position={[0, 1, 0]} onClick={yRefClick}>
-            <sphereGeometry args={[0.25, 32, 32]} />
-            <meshStandardMaterial color="red" />
-        </mesh>
-
-        <mesh ref={xRef} position={[1, 0, 0]} onClick={xRefClick}>
-            <sphereGeometry args={[0.25, 32, 32]} />
-            <meshStandardMaterial color="yellow" />
-        </mesh>
-
-        <mesh ref={zRef} position={[0, 0, 1]} onClick={zRefClick}>
-            <sphereGeometry args={[0.25, 32, 32]} />
-            <meshStandardMaterial color="blue" />
-        </mesh> */}
-
         <PivotMesh cube={1} top={cubeState.top} side={cubeState.side} front={cubeState.front} upsideDown={'no'} clickCountX={clickCountX} clickCountY={clickCountY} clickCountZ={clickCountZ} position={[0.57, 0.69, 0.57]} color={'navy'}/>
         <PivotMesh cube={2} top={cubeState.top} side={cubeState.side} front={cubeState.front} upsideDown={'no'} clickCountX={clickCountX} clickCountY={clickCountY} clickCountZ={clickCountZ} position={[0.57, 0.69, -0.57]} color={'blue'}/>
         <PivotMesh cube={3} top={cubeState.top} side={cubeState.side} front={cubeState.front} upsideDown={'no'} clickCountX={clickCountX} clickCountY={clickCountY} clickCountZ={clickCountZ} position={[-0.57, 0.69, -0.57]} color={'dodgerblue'}/>
@@ -176,14 +151,7 @@ function PivotMesh({
     const { rotationZ } = useSpring({
         rotationZ: [ Math.PI / 2 * meshCountZ ],
         config: { mass: 5, tension: 100, friction: 40, precision: 0.00001, velocity: 0, clamp: true }
-    })
-
-    // set up leva for the three parameters
-    const { mesh_rot_x, mesh_rot_y, mesh_rot_z } = useControls({ 
-        mesh_rot_x: { value: 0, step: Math.PI / 16 },
-        mesh_rot_y: { value: 0, step: Math.PI / 16 },
-        mesh_rot_z: { value: 0, step: Math.PI / 16 }
-    })    
+    })  
 
     // only run on mount
     useEffect(() => {
@@ -205,9 +173,9 @@ function PivotMesh({
         <mesh 
             ref={meshRef} 
             position={position}
-            rotation-x={mesh_rot_x}
-            rotation-y={mesh_rot_y}
-            rotation-z={mesh_rot_z}
+            rotation-x={0}
+            rotation-y={0}
+            rotation-z={0}
         >
             <LensModel upsideDown={upsideDown} />
             <meshPhysicalMaterial transparent={true} opacity={0.5}/>
@@ -246,22 +214,3 @@ function LensModel(upsideDown) {
     </>
 
 }
-
-function interval(func, wait, times){
-    var interv = function(w, t){
-        return function(){
-            if(typeof t === "undefined" || t-- > 0){
-                setTimeout(interv, w);
-                try{
-                    func.call(null);
-                }
-                catch(e){
-                    t = 0;
-                    throw e.toString();
-                }
-            }
-        };
-    }(wait, times);
-
-    setTimeout(interv, wait);
-};
