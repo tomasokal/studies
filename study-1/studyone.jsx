@@ -4,6 +4,8 @@ import { useLoader } from '@react-three/fiber'
 import * as THREE from 'three'
 import { useControls } from 'leva'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
+import { useGLTF } from '@react-three/drei'
+import { MeshTransmissionMaterial } from './materials/MeshTransmissionMaterial.ts'
 
 export default function StudyOne()
 {
@@ -178,7 +180,6 @@ function PivotMesh({
             rotation-z={0}
         >
             <LensModel upsideDown={upsideDown} />
-            <meshPhysicalMaterial transparent={true} opacity={0.5}/>
         </mesh> 
 
         <mesh ref={lookRef} position={lookRefPosition} visible={false}>
@@ -190,6 +191,8 @@ function PivotMesh({
 }
 
 function LensModel(upsideDown) {
+
+    const { nodes, materials } = useGLTF("./models/lens.gltf")
 
     const model = useLoader(
         GLTFLoader,
@@ -203,12 +206,88 @@ function LensModel(upsideDown) {
 
     upsideDown.upsideDown === 'yes' ? model.scene.rotation.z = Math.PI : model.scene.rotation.z = 0
 
+    const meshTransmissionMaterial = new MeshTransmissionMaterial()
+    
+    const { 
+        color, roughness, metalness, 
+        ior, specularColor, specularIntensity, 
+        transmission, thickness, attenuationColor, attenuationDistance, chromaticAberration,
+        envMapIntensity,
+        opacity, transparent
+     } = useControls({
+        color: { value: '#ffffff' },
+        roughness: { value: 0.5, min: 0, max: 1 },
+        metalness: { value: 0, min: 0, max: 1 },
+
+        ior: { value: 1.5, min: 1, max: 2 },
+        specularColor: { value: '#ffffff' },
+        specularIntensity: { value: 0.5, min: 0, max: 1 },
+
+        transmission: { value: 0.5, min: 0, max: 1 },
+        thickness: { value: 1, min: 0, max: 5 },
+        attenuationColor: { value: '#ffffff' },
+        attenuationDistance: { value: 0.5, min: 0, max: 1 },
+        chromaticAberration: { value: 0.03, min: 0, max: 1 },
+
+        envMapIntensity: { value: 0.5, min: 0, max: 1 },
+
+        opacity: { value: 0.5, min: 0, max: 1 },
+        transparent: true,
+    })
+
+    model.scene.traverse( function( object ) {
+
+        if ( object.isMesh ) {
+
+            object.castShadow = true
+            object.receiveShadow = true
+
+            // object.material = new MeshTransmissionMaterial({
+            //     _transmission: transmission,
+            //     thickness: thickness,
+            //     roughness: roughness,
+            //     chromaticAberration: chromaticAberration,
+            //     // anisotropicBlur: 0.1,
+            //     // distortion: 0,
+            //     // distortionScale: 0.5,
+            //     // temporalDistortion: 0.0,
+            //   })
+
+            object.material = new THREE.MeshPhysicalMaterial(
+                {
+                    color: color,
+                    roughness: roughness,
+                    metalness: metalness,
+
+                    ior: ior,
+                    specularColor: specularColor,
+                    specularIntensity: specularIntensity,
+
+                    transmission: transmission,
+                    thickness: thickness,
+                    attenuationColor: attenuationColor,
+                    attenuationDistance: attenuationDistance,
+
+                    envMapIntensity: envMapIntensity,
+
+                    opacity: 0.5,
+                    transparent: transparent,
+
+                    depthTest: false,
+                }
+            )
+    
+        }
+    
+    })
+
     return <>
 
         <primitive 
             castShadow
             receiveShadow
-            object={ model.scene.clone() } 
+            object={ model.scene.clone() }
+            material={ model.materials }
         />
 
     </>
