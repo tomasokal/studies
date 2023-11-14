@@ -4,8 +4,9 @@ import { useLoader } from '@react-three/fiber'
 import * as THREE from 'three'
 import { useControls } from 'leva'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
-import { useGLTF } from '@react-three/drei'
-import { MeshTransmissionMaterial } from './materials/MeshTransmissionMaterial.ts'
+import { TextureLoader } from 'three/src/loaders/TextureLoader'
+import { useGLTF, MeshTransmissionMaterial } from '@react-three/drei'
+// import { MeshTransmissionMaterial } from './materials/MeshTransmissionMaterial.ts'
 
 export default function StudyOne()
 {
@@ -192,7 +193,9 @@ function PivotMesh({
 
 function LensModel(upsideDown) {
 
-    const { nodes, materials } = useGLTF("./models/lens.gltf")
+    const normalMapTexture = useLoader(TextureLoader, 'texture.jpg')
+    // normalMapTexture.wrapS = THREE.RepeatWrapping
+    // normalMapTexture.wrapT = THREE.RepeatWrapping
 
     const model = useLoader(
         GLTFLoader,
@@ -206,33 +209,49 @@ function LensModel(upsideDown) {
 
     upsideDown.upsideDown === 'yes' ? model.scene.rotation.z = Math.PI : model.scene.rotation.z = 0
 
-    const meshTransmissionMaterial = new MeshTransmissionMaterial()
+    // const meshTransmissionMaterial = new MeshTransmissionMaterial()
     
     const { 
-        color, roughness, metalness, 
-        ior, specularColor, specularIntensity, 
-        transmission, thickness, attenuationColor, attenuationDistance, chromaticAberration,
-        envMapIntensity,
-        opacity, transparent
+        color,
+        transmission, thickness, roughness, metalness,
+        ior, specularColor, specularIntensity,
+        // envMap, envMapIntensity,
+        clearcoat, clearcoatRoughness,
+        normalScale,
+        clearcoatNormalScale,
+        attenuationColor, attenuationDistance,
+        chromaticAberration,
+        transparent,
      } = useControls({
+
         color: { value: '#ffffff' },
-        roughness: { value: 0.5, min: 0, max: 1 },
+
+        transmission: { value: 1, min: 0, max: 1 },
+        thickness: { value: 1.2, min: 0, max: 5 },
+        roughness: { value: 0.6, min: 0, max: 1 },
         metalness: { value: 0, min: 0, max: 1 },
 
         ior: { value: 1.5, min: 1, max: 2 },
         specularColor: { value: '#ffffff' },
         specularIntensity: { value: 0.5, min: 0, max: 1 },
 
-        transmission: { value: 0.5, min: 0, max: 1 },
-        thickness: { value: 1, min: 0, max: 5 },
+        // envMap,
+        // envMapIntensity,
+
+        clearcoat: { value: 0, min: 0, max: 1 },
+        clearcoatRoughness: { value: 0, min: 0, max: 1 },
+
+        normalScale: { value: 1, min: 0, max: 5 },
+
+        clearcoatNormalScale: { value: 1.3, min: 0, max: 5 },
+
         attenuationColor: { value: '#ffffff' },
         attenuationDistance: { value: 0.5, min: 0, max: 1 },
+
         chromaticAberration: { value: 0.03, min: 0, max: 1 },
 
-        envMapIntensity: { value: 0.5, min: 0, max: 1 },
-
-        opacity: { value: 0.5, min: 0, max: 1 },
         transparent: true,
+
     })
 
     model.scene.traverse( function( object ) {
@@ -242,38 +261,33 @@ function LensModel(upsideDown) {
             object.castShadow = true
             object.receiveShadow = true
 
-            // object.material = new MeshTransmissionMaterial({
-            //     _transmission: transmission,
-            //     thickness: thickness,
-            //     roughness: roughness,
-            //     chromaticAberration: chromaticAberration,
-            //     // anisotropicBlur: 0.1,
-            //     // distortion: 0,
-            //     // distortionScale: 0.5,
-            //     // temporalDistortion: 0.0,
-            //   })
-
             object.material = new THREE.MeshPhysicalMaterial(
                 {
+
                     color: color,
+                    transmission: transmission, 
+                    // thickness: thickness, 
                     roughness: roughness,
                     metalness: metalness,
+                    // ior: ior, 
+                    // specularColor: specularColor, 
+                    // specularIntensity: specularIntensity,
+                    // envMap, 
+                    // envMapIntensity,
+                    // clearcoat: clearcoat, 
+                    // clearcoatRoughness: clearcoatRoughness,
+                    // normalScale: normalScale, 
+                    // normalMap: normalMapTexture,
+                    // clearcoatNormalMap: normalMapTexture,
+                    // clearcoatNormalScale: clearcoatNormalScale,
+                    // attenuationColor: attenuationColor,
+                    // attenuationDistance: attenuationDistance,
+                    // transparent: transparent,
 
-                    ior: ior,
-                    specularColor: specularColor,
-                    specularIntensity: specularIntensity,
+                    // depthWrite: false,
 
-                    transmission: transmission,
-                    thickness: thickness,
-                    attenuationColor: attenuationColor,
-                    attenuationDistance: attenuationDistance,
+                    // side: THREE.DoubleSide,
 
-                    envMapIntensity: envMapIntensity,
-
-                    opacity: 0.5,
-                    transparent: transparent,
-
-                    depthTest: false,
                 }
             )
     
@@ -284,8 +298,8 @@ function LensModel(upsideDown) {
     return <>
 
         <primitive 
-            castShadow
-            receiveShadow
+            // castShadow
+            // receiveShadow
             object={ model.scene.clone() }
             material={ model.materials }
         />
